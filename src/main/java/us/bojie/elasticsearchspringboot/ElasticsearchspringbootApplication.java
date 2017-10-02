@@ -1,5 +1,6 @@
 package us.bojie.elasticsearchspringboot;
 
+import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.transport.TransportClient;
@@ -11,6 +12,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -35,6 +38,7 @@ public class ElasticsearchspringbootApplication {
         return "index";
     }
 
+    // Getting
     @GetMapping("/get/book/novel")
     public ResponseEntity get(@RequestParam(name = "id", defaultValue = "") String id) {
         if (id.isEmpty()) {
@@ -51,6 +55,7 @@ public class ElasticsearchspringbootApplication {
         return new ResponseEntity(result.getSource(), HttpStatus.OK);
     }
 
+    // Adding
     @PostMapping("add/book/novel")
     public ResponseEntity add(
             @RequestParam(name = "title") String title,
@@ -75,6 +80,17 @@ public class ElasticsearchspringbootApplication {
             e.printStackTrace();
             return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    // Deleting
+    @DeleteMapping("/delete/book/novel")
+    public ResponseEntity delete(@RequestParam(name = "id", defaultValue = "") String id) {
+        if (StringUtils.isEmpty(id)) {
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+
+        DeleteResponse response = mClient.prepareDelete("book", "novel", id).get();
+        return new ResponseEntity(response.getResult().toString(), HttpStatus.OK);
 
     }
 }
